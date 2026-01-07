@@ -22,7 +22,7 @@ export function App() {
 
     try {
       // 2. Envoyer au Backend
-      const response = await fetch('http://127.0.0.1:8000/api/chat', {
+      const response = await fetch('https://askit-9u2q.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: userMsg.content })

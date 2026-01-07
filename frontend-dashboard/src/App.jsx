@@ -20,7 +20,7 @@ function App() {
   // --- 1. CHARGEMENT DE L'HISTORIQUE ---
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/history');
+      const res = await fetch('https://askit-9u2q.onrender.com/api/history');
       const data = await res.json();
       setHistory(data);
     } catch (e) {
@@ -38,7 +38,7 @@ function App() {
     setStatus('loading');
     
     try {
-      await fetch('http://127.0.0.1:8000/api/learn', {
+      await fetch('https://askit-9u2q.onrender.com/api/learn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: textToLearn }),
@@ -133,7 +133,7 @@ function App() {
                   btn.disabled = true;
 
                   try {
-                    const res = await fetch('http://127.0.0.1:8000/api/scrape', {
+                    const res = await fetch('https://askit-9u2q.onrender.com/api/scrape', {
                       method: 'POST',
                       headers: {'Content-Type': 'application/json'},
                       body: JSON.stringify({ url: url })
