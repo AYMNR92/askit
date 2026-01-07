@@ -1,0 +1,9 @@
+# Fichiers système
+node_modules/
+__pycache__/
+venv/
+.DS_Store
+
+# Fichiers sensibles (TRÈS IMPORTANT)
+.env
+.env.local
