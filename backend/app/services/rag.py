@@ -19,59 +19,58 @@ supabase: Client = create_client(url, key)
 # 2. Initialisation de l'outil qui transforme le texte en vecteurs (Embeddings)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small", api_key=api_key)
 
-def add_knowledge_to_db(text: str, source: str = "manuel"):
+def add_knowledge_to_db(text: str, client_id: str, source: str = "manuel"):
     """
-    Apprend un nouveau texte : le transforme en vecteur et le stocke dans Supabase.
+    Apprend un texte POUR UN CLIENT SPÉCIFIQUE.
     """
-    # A. Transformer le texte en nombres (vecteur)
     vector = embeddings.embed_query(text)
     
-    # B. Préparer les données
     data = {
         "content": text,
         "metadata": {"source": source},
-        "embedding": vector
+        "embedding": vector,
+        "client_id": client_id  # <--- AJOUT CRITIQUE
     }
     
-    # C. Insérer dans Supabase
     response = supabase.table("documents").insert(data).execute()
     return response
 
-def search_knowledge_base(query: str):
+def search_knowledge_base(query: str, client_id: str):
     """
-    Cherche le texte le plus pertinent dans la base pour répondre à une question.
+    Cherche uniquement dans les données du client_id.
     """
-    # A. Transformer la question en vecteur
     query_vector = embeddings.embed_query(query)
     
-    # B. Appeler la fonction de recherche (celle qu'on a créée en SQL)
     params = {
         "query_embedding": query_vector,
-        "match_threshold": 0.5, # Seuil de similarité (70%)
-        "match_count": 3        # Récupérer les 3 meilleurs morceaux
+        "match_threshold": 0.5,
+        "match_count": 3,
+        "filter_client_id": client_id # <--- LE FILTRE DE SÉCURITÉ
     }
     
     response = supabase.rpc("match_documents", params).execute()
-    
-    # C. Retourner juste le texte
     return [doc['content'] for doc in response.data]
 
-def save_conversation(user_question: str, bot_response: str):
-    """
-    Sauvegarde un échange dans la table 'conversations'.
-    """
+def save_conversation(user_question: str, bot_response: str, client_id: str = None):
     data = {
         "messages": [
             {"role": "user", "content": user_question},
             {"role": "bot", "content": bot_response}
         ]
-        # user_email reste null pour l'instant
     }
+    # Si tu as ajouté la colonne client_id dans 'conversations' (recommandé)
+    if client_id:
+        data["client_id"] = client_id
+        
     supabase.table("conversations").insert(data).execute()
 
-def get_all_conversations():
+def get_all_conversations(client_id: str):
     """
-    Récupère l'historique pour le dashboard, du plus récent au plus vieux.
+    Récupère l'historique UNIQUEMENT pour le client connecté.
     """
-    response = supabase.table("conversations").select("*").order("created_at", desc=True).execute()
+    response = supabase.table("conversations")\
+        .select("*")\
+        .eq("client_id", client_id)\
+        .order("created_at", desc=True)\
+        .execute()
     return response.data
