@@ -7,16 +7,16 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
+# Configuration des chemins (.env)
+basedir = pathlib.Path(__file__).parents[1]
+load_dotenv(basedir / ".env")
 # --- IMPORTS DE TES SERVICES ---
 # Assure-toi que le fichier security.py est bien dans app/middleware/
 from app.core.security import verify_security, increment_usage_async
 from app.services.rag import add_knowledge_to_db, search_knowledge_base, save_conversation, get_all_conversations
 from app.services.scraper import scrape_website
 
-# Configuration des chemins (.env)
-basedir = pathlib.Path(__file__).parents[1]
-load_dotenv(basedir / ".env")
+
 
 app = FastAPI(title="AI Support Bot API (Multi-Tenant)")
 

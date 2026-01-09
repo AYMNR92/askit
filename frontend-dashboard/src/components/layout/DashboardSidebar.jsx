@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -8,9 +8,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  User,
   LogOut,
-  CreditCard,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,10 +18,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { api } from "@/lib/api";
 
 const navItems = [
   { title: "Vue d'ensemble", href: "/", icon: LayoutDashboard },
@@ -34,6 +33,13 @@ const navItems = [
 export function DashboardSidebar({ className }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const [quota, setQuota] = useState({ used: 0, limit: 1000 });
+
+  // Simulation de récupération du quota (À connecter plus tard à /api/me)
+  useEffect(() => {
+    // Pour l'instant, on laisse statique ou on peut baser ça sur le nombre de messages
+    // const fetchQuota = async () => ...
+  }, []);
 
   return (
     <motion.aside
@@ -54,33 +60,21 @@ export function DashboardSidebar({ className }) {
         >
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">AI</span>
+              <span className="text-primary-foreground font-bold text-sm">AS</span>
             </div>
             <span className="font-semibold text-foreground whitespace-nowrap">
-              Support Bot
+              Askit Admin
             </span>
           </Link>
         </motion.div>
-        
-        {collapsed && (
-          <Link to="/" className="mx-auto">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">AI</span>
-            </div>
-          </Link>
-        )}
         
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="h-8 w-8 shrink-0"
+          className="h-8 w-8 shrink-0 ml-auto"
         >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
 
@@ -102,10 +96,7 @@ export function DashboardSidebar({ className }) {
               <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
               <motion.span
                 initial={false}
-                animate={{
-                  opacity: collapsed ? 0 : 1,
-                  width: collapsed ? 0 : "auto",
-                }}
+                animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
                 className="overflow-hidden whitespace-nowrap"
               >
                 {item.title}
@@ -115,69 +106,46 @@ export function DashboardSidebar({ className }) {
         })}
       </nav>
 
-      {/* Credits */}
+      {/* Credits / Quota */}
       <motion.div
         initial={false}
-        animate={{
-          opacity: collapsed ? 0 : 1,
-          height: collapsed ? 0 : "auto",
-        }}
+        animate={{ opacity: collapsed ? 0 : 1, height: collapsed ? 0 : "auto" }}
         className="overflow-hidden px-4 pb-4"
       >
         <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-muted-foreground">Crédits</span>
-            <span className="text-xs text-foreground font-semibold">450/1000</span>
+            <span className="text-xs font-medium text-muted-foreground">Utilisation</span>
+            <span className="text-xs text-foreground font-semibold">Standard</span>
           </div>
-          <Progress value={45} className="h-1.5" />
+          <Progress value={33} className="h-1.5" />
           <p className="text-xs text-muted-foreground mt-2">
-            550 crédits restants ce mois
+            Plan Free actif
           </p>
         </div>
       </motion.div>
 
-      {/* User */}
+      {/* User Profile */}
       <div className="p-3 border-t border-border">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
+            <button className={cn(
                 "flex items-center gap-3 w-full p-2 rounded-lg hover:bg-muted/50 transition-colors",
                 collapsed && "justify-center"
-              )}
-            >
+              )}>
               <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                  JD
-                </AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary text-sm">AD</AvatarFallback>
               </Avatar>
               <motion.div
                 initial={false}
-                animate={{
-                  opacity: collapsed ? 0 : 1,
-                  width: collapsed ? 0 : "auto",
-                }}
+                animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
                 className="overflow-hidden text-left"
               >
-                <p className="text-sm font-medium text-foreground truncate">
-                  Jean Dupont
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  jean@maboutique.fr
-                </p>
+                <p className="text-sm font-medium text-foreground truncate">Administrateur</p>
+                <p className="text-xs text-muted-foreground truncate">admin@askit.com</p>
               </motion.div>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem>
-              <User className="h-4 w-4 mr-2" />
-              Mon profil
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <CreditCard className="h-4 w-4 mr-2" />
-              Facturation
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">
               <LogOut className="h-4 w-4 mr-2" />
               Déconnexion
