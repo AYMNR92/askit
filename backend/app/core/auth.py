@@ -6,16 +6,17 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, Depends, status
 from dotenv import load_dotenv
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pathlib import Path  # <--- INDISPENSABLE
 
-load_dotenv()
+env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
-# --- CORRECTION ICI ---
-# On cherche la clé, mais on met une valeur par défaut si elle n'est pas trouvée
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "cle_de_secours_ultra_secrete_12345") 
+# 2. On récupère la vraie clé (plus de valeur par défaut !)
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
-# Petit mouchard pour vérifier dans le terminal
-print(f"🔑 AUTH DEBUG : La clé utilisée est : '{SECRET_KEY}'")
-# ----------------------
+# 3. Sécurité : On plante immédiatement si la clé manque
+if not SECRET_KEY:
+    raise ValueError("FATAL : JWT_SECRET_KEY est manquant dans le fichier .env !")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
