@@ -82,3 +82,6 @@ xxhash==3.6.0
 yarl==1.22.0
 zstandard==0.25.0
 redis==7.1.0
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
