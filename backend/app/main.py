@@ -11,7 +11,7 @@ from app.services.scraper import scrape_website
 # Utilisation du nouveau module
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 # --- Imports de Sécurité (LES DEUX VIGILES) ---
 from app.core.security import verify_security, increment_usage_async, supabase  # Vigile Widget
