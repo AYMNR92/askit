@@ -2,11 +2,19 @@ import { useState, useEffect, useRef, useMemo } from 'preact/hooks';
 import './index.css'; // Assure-toi que c'est bien index.css qui contient @tailwind
 
 // --- CONFIGURATION ---
+// const getWidgetConfig = () => {
+//   const script = document.currentScript || document.querySelector('script[data-token]');
+//   return {
+//     token: script?.getAttribute('data-token') || "pub_test_123456",
+//     primaryColor: script?.getAttribute('data-color') || "#2563eb"
+//   };
+// };
+
 const getWidgetConfig = () => {
-  const script = document.currentScript || document.querySelector('script[data-token]');
+  // On force le vrai token ici pour être SÛR qu'il est utilisé
   return {
-    token: script?.getAttribute('data-token') || "pub_test_123456",
-    primaryColor: script?.getAttribute('data-color') || "#2563eb"
+    token: "pub_0098f052d9ae48f4cd637fd372a6825a", 
+    primaryColor: "#2563eb"
   };
 };
 
