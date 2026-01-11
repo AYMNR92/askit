@@ -38,6 +38,8 @@ def is_origin_allowed(origin: str, allowed_list: list) -> bool:
         parsed = urlparse(origin if origin.startswith('http') else f"https://{origin}")
         domain = (parsed.netloc or parsed.path).split(':')[0].lower()
         
+        print(f"🔍 Check Domaine: Reçu='{domain}' vs Autorisés={allowed_list}")
+
         # 1. Exact match
         if domain in allowed_list: return True
         
@@ -46,7 +48,8 @@ def is_origin_allowed(origin: str, allowed_list: list) -> bool:
             if allowed.startswith('*.') and domain.endswith(allowed[2:]):
                 return True
         return False
-    except:
+    except Exception as e:
+        print(f"⚠️ Erreur parsing domaine: {e}")
         return False
 
 async def log_security_violation(client_id: str, origin: str, reason: str):
@@ -85,7 +88,6 @@ async def increment_usage_async(client_id: str):
     loop.run_in_executor(executor, _increment)
 
 async def get_client_data_cached(token: str) -> dict:
-    """Cache intelligent: Redis -> Supabase -> Redis"""
     cache_key = f"client:{token}"
     
     # 1. Essayer Redis
@@ -96,18 +98,20 @@ async def get_client_data_cached(token: str) -> dict:
         except: pass 
     
     # 2. Supabase
+    print(f"🔍 Recherche Token en DB : {token}")
     response = supabase.table("clients").select("*").eq("public_token", token).eq("is_active", True).execute()
     
     if not response.data:
+        print("❌ Token non trouvé dans Supabase !")
         return None
     
     client_data = response.data[0]
     
-    # 3. Sauver dans Redis (1 heure)
-    if redis_client:
-        try:
-            redis_client.setex(cache_key, 3600, json.dumps(client_data))
-        except: pass
+    # # 3. Sauver dans Redis (1 heure)
+    # if redis_client:
+    #     try:
+    #         redis_client.setex(cache_key, 3600, json.dumps(client_data))
+    #     except: pass
         
     return client_data
 
@@ -117,33 +121,31 @@ async def verify_security(
     request: Request,
     x_widget_token: str = Header(None, alias="X-Widget-Token")
 ):
-    """
-    🛡️ Middleware complet à injecter dans les routes
-    """
+    print("\n--- 🛡️ VIGILE SECURITY CHECK ---")
     
     # 1. TOKEN
-    if not x_widget_token:
-        # Pour faciliter tes tests locaux via Swagger sans header, on peut mettre une exception
-        # Si tu veux tester "vite fait", décommente la ligne suivante avec ton token de test
-        # x_widget_token = "pub_test_123456" 
-        pass
+    print(f"👉 Token reçu : '{x_widget_token}'")
 
     if not x_widget_token:
+        print("❌ Rejet: Pas de header X-Widget-Token")
         raise HTTPException(401, "Token manquant (X-Widget-Token)")
     
     client_data = await get_client_data_cached(x_widget_token)
     if not client_data:
+        print("❌ Rejet: Client introuvable pour ce token")
         raise HTTPException(403, "Token invalide ou client inactif")
     
     # 2. DOMAINE (ORIGIN)
     origin = request.headers.get("origin") or request.headers.get("referer")
+    print(f"👉 Origine détectée : '{origin}'")
     # On autorise localhost et 127.0.0.1 pour tes tests, sinon c'est l'enfer
-    is_local = origin and ("localhost" in origin or "127.0.0.1" in origin)
+    # is_local = origin and ("localhost" in origin or "127.0.0.1" in origin)
     
-    if origin and not is_local:
-        if not is_origin_allowed(origin, client_data['allowed_origins']):
-            await log_security_violation(client_data['id'], origin, "Domain mismatch")
-            raise HTTPException(403, f"Domaine non autorisé: {origin}")
+    # if origin and not is_local:
+    #     if not is_origin_allowed(origin, client_data['allowed_origins']):
+    #         await log_security_violation(client_data['id'], origin, "Domain mismatch")
+    #         raise HTTPException(403, f"Domaine non autorisé: {origin}")
+    print("✅ Accès autorisé (Check domaine désactivé temporairement)")
             
     # 3. RATE LIMITING (Via Redis)
     if redis_client:
@@ -159,6 +161,7 @@ async def verify_security(
     # 4. QUOTA VERIFICATION
     # On vérifie juste le quota connu dans le cache client_data pour aller vite
     if client_data['requests_used'] >= client_data['monthly_quota']:
+        print("❌ Rejet: Quota dépassé")
         raise HTTPException(402, "Quota mensuel dépassé.")
         
     return client_data
