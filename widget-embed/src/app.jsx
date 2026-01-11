@@ -2,12 +2,13 @@ import { useState, useEffect, useRef, useMemo } from 'preact/hooks';
 import './index.css'; // Assure-toi que c'est bien index.css qui contient @tailwind
 
 const getWidgetConfig = () => {
-  // On cherche le script qui contient l'attribut data-token
   const script = document.currentScript || document.querySelector('script[data-token]');
   
   return {
-    // Si on trouve l'attribut, on l'utilise. Sinon, on met une chaine vide (et ça fera une erreur normale)
-    token: script?.getAttribute('data-token') || "", 
+    // 1. Priorité : Le token écrit dans le HTML (pour tes clients)
+    // 2. Fallback : Ton token Admin (pour que ta démo marche toujours)
+    token: script?.getAttribute('data-token') || "pub_0098f052d9ae48f4cd637fd372a6825a", 
+    
     primaryColor: script?.getAttribute('data-color') || "#2563eb"
   };
 };
