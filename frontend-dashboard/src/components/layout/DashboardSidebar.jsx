@@ -21,7 +21,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { api } from "@/lib/api";
+// 👇 AJOUT 1 : Import du hook d'auth
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { title: "Vue d'ensemble", href: "/", icon: LayoutDashboard },
@@ -34,12 +35,9 @@ export function DashboardSidebar({ className }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [quota, setQuota] = useState({ used: 0, limit: 1000 });
-
-  // Simulation de récupération du quota (À connecter plus tard à /api/me)
-  useEffect(() => {
-    // Pour l'instant, on laisse statique ou on peut baser ça sur le nombre de messages
-    // const fetchQuota = async () => ...
-  }, []);
+  
+  // 👇 AJOUT 2 : Récupération de la fonction logout et des infos user
+  const { logout, user } = useAuth();
 
   return (
     <motion.aside
@@ -51,8 +49,11 @@ export function DashboardSidebar({ className }) {
         className
       )}
     >
+      {/* ... (Le début ne change pas) ... */}
+      
       {/* Logo & Toggle */}
       <div className="flex items-center justify-between p-4 border-b border-border">
+        {/* ... (Code existant du logo) ... */}
         <motion.div
           initial={false}
           animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
@@ -78,7 +79,7 @@ export function DashboardSidebar({ className }) {
         </Button>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation (Code existant) */}
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.href;
@@ -106,7 +107,7 @@ export function DashboardSidebar({ className }) {
         })}
       </nav>
 
-      {/* Credits / Quota */}
+      {/* Credits / Quota (Code existant) */}
       <motion.div
         initial={false}
         animate={{ opacity: collapsed ? 0 : 1, height: collapsed ? 0 : "auto" }}
@@ -124,7 +125,7 @@ export function DashboardSidebar({ className }) {
         </div>
       </motion.div>
 
-      {/* User Profile */}
+      {/* User Profile - À MODIFIER EN BAS */}
       <div className="p-3 border-t border-border">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -133,20 +134,27 @@ export function DashboardSidebar({ className }) {
                 collapsed && "justify-center"
               )}>
               <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="bg-primary/10 text-primary text-sm">AD</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                  {user?.name ? user.name.substring(0, 2).toUpperCase() : "AD"}
+                </AvatarFallback>
               </Avatar>
               <motion.div
                 initial={false}
                 animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
                 className="overflow-hidden text-left"
               >
-                <p className="text-sm font-medium text-foreground truncate">Administrateur</p>
-                <p className="text-xs text-muted-foreground truncate">admin@askit.com</p>
+                <p className="text-sm font-medium text-foreground truncate">
+                    {user?.name || "Administrateur"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                    {user?.email || "admin@askit.com"}
+                </p>
               </motion.div>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem className="text-destructive">
+            {/* 👇 AJOUT 3 : L'action logout */}
+            <DropdownMenuItem className="text-destructive" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               Déconnexion
             </DropdownMenuItem>
