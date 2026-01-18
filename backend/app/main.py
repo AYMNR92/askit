@@ -145,6 +145,13 @@ async def chat_endpoint(request: ChatRequest, client_data: dict = Depends(verify
         
         # 1. RECHERCHE ISOLÉE
         context_results = search_knowledge_base(request.question, client_id=client_id)
+
+        print(f"\n🔍 QUESTION : {request.question}")
+        print(f"📦 CONTEXTE TROUVÉ ({len(context_results)} documents) :")
+        for idx, doc in enumerate(context_results):
+            print(f"   --- Doc {idx+1} : {doc[:100]}...") # On affiche les 100 premiers caractères
+        print("--------------------------------------------------\n")
+        
         context_text = "\n\n".join(context_results) if context_results else "Aucune information spécifique trouvée."
 
         # 2. PROMPT

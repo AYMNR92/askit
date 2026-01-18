@@ -43,9 +43,9 @@ def search_knowledge_base(query: str, client_id: str):
     
     params = {
         "query_embedding": query_vector,
-        "match_threshold": 0.5,
-        "match_count": 3,
-        "filter_client_id": client_id # <--- LE FILTRE DE SÉCURITÉ
+        "match_threshold": 0.3, # <--- MODIF 1 : On baisse le seuil (0.5 était trop strict, le bot ratait des infos)
+        "match_count": 6,       # <--- MODIF 2 : On récupère 6 morceaux de texte au lieu de 3 (pour avoir plus de contexte)
+        "filter_client_id": client_id 
     }
     
     response = supabase.rpc("match_documents", params).execute()
