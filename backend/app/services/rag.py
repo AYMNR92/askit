@@ -37,28 +37,18 @@ def add_knowledge_to_db(text: str, client_id: str, source: str = "manuel"):
 
 def search_knowledge_base(query: str, client_id: str):
     """
-    Version de DEBUG : Seuil à 0.0 et affichage des scores.
+    Version PROD : Seuil calibré à 0.22 suite aux tests.
     """
     query_vector = embeddings.embed_query(query)
     
     params = {
         "query_embedding": query_vector,
-        "match_threshold": 0.0, # 🟢 ON OUVRE LES VANNES (0.0)
-        "match_count": 10,      # On regarde les 10 résultats les plus proches
+        "match_threshold": 0.22, # <--- LE CHIFFRE MAGIQUE (Suffisamment bas pour tout capter)
+        "match_count": 5,        # On garde 5 morceaux pour avoir du contexte
         "filter_client_id": client_id 
     }
     
     response = supabase.rpc("match_documents", params).execute()
-    
-    # 👇 LOGS PRÉCIS POUR VOIR LES SCORES 👇
-    print(f"\n🧪 DEBUG SCORE pour : '{query}'")
-    for idx, doc in enumerate(response.data):
-        # On affiche le score (similarity) et le début du texte
-        score = doc.get('similarity', 0)
-        content = doc.get('content', '')[:60].replace('\n', ' ')
-        print(f"   [{idx+1}] Score: {score:.4f} | Txt: {content}...")
-    print("--------------------------------------------------\n")
-    
     return [doc['content'] for doc in response.data]
 
 def save_conversation(user_question: str, bot_response: str, client_id: str = None):
