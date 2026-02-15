@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Animation d'apparition fluide (équivalent à Framer Motion) */
 @keyframes slideUpFade {
   from {
     opacity: 0;
@@ -18,7 +17,7 @@
   animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Scrollbar fine et discrète pour les messages */
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

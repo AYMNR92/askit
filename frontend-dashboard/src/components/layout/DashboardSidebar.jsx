@@ -21,7 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-// 👇 AJOUT 1 : Import du hook d'auth
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
@@ -36,7 +35,6 @@ export function DashboardSidebar({ className }) {
   const location = useLocation();
   const [quota, setQuota] = useState({ used: 0, limit: 1000 });
   
-  // 👇 AJOUT 2 : Récupération de la fonction logout et des infos user
   const { logout, user } = useAuth();
 
   return (
@@ -49,11 +47,8 @@ export function DashboardSidebar({ className }) {
         className
       )}
     >
-      {/* ... (Le début ne change pas) ... */}
       
-      {/* Logo & Toggle */}
       <div className="flex items-center justify-between p-4 border-b border-border">
-        {/* ... (Code existant du logo) ... */}
         <motion.div
           initial={false}
           animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
@@ -79,7 +74,6 @@ export function DashboardSidebar({ className }) {
         </Button>
       </div>
 
-      {/* Navigation (Code existant) */}
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.href;
@@ -107,7 +101,7 @@ export function DashboardSidebar({ className }) {
         })}
       </nav>
 
-      {/* Credits / Quota (Code existant) */}
+     
       <motion.div
         initial={false}
         animate={{ opacity: collapsed ? 0 : 1, height: collapsed ? 0 : "auto" }}
@@ -125,7 +119,7 @@ export function DashboardSidebar({ className }) {
         </div>
       </motion.div>
 
-      {/* User Profile - À MODIFIER EN BAS */}
+    
       <div className="p-3 border-t border-border">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -153,7 +147,6 @@ export function DashboardSidebar({ className }) {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            {/* 👇 AJOUT 3 : L'action logout */}
             <DropdownMenuItem className="text-destructive" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               Déconnexion

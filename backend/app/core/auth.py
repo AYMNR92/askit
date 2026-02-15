@@ -6,15 +6,13 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, Depends, status
 from dotenv import load_dotenv
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pathlib import Path  # <--- INDISPENSABLE
+from pathlib import Path 
 
 env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# 2. On récupère la vraie clé (plus de valeur par défaut !)
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
-# 3. Sécurité : On plante immédiatement si la clé manque
 if not SECRET_KEY:
     raise ValueError("FATAL : JWT_SECRET_KEY est manquant dans le fichier .env !")
 
@@ -49,7 +47,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         if client_id is None:
             raise HTTPException(status_code=401, detail="Token invalide")
         
-        # Vérifier que le client existe et est actif
         client = supabase.table("clients").select("*").eq("id", client_id).eq("is_active", True).single().execute()
         if not client.data:
             raise HTTPException(status_code=401, detail="Client introuvable")

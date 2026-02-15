@@ -1,19 +1,16 @@
 import { useState, useEffect, useRef, useMemo } from 'preact/hooks';
-import './index.css'; // Assure-toi que c'est bien index.css qui contient @tailwind
+import './index.css';
 
 const getWidgetConfig = () => {
   const script = document.currentScript || document.querySelector('script[data-token]');
   
   return {
-    // 1. Priorité : Le token écrit dans le HTML (pour tes clients)
-    // 2. Fallback : Ton token Admin (pour que ta démo marche toujours)
     token: script?.getAttribute('data-token') || "pub_0098f052d9ae48f4cd637fd372a6825a", 
     
     primaryColor: script?.getAttribute('data-color') || "#2563eb"
   };
 };
 
-// --- ICONES SVG SIMPLES (Pas besoin de librairie) ---
 const Icons = {
   MessageCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>,
   X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
@@ -29,8 +26,6 @@ export function App() {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Auto-scroll
   const messagesEndRef = useRef(null);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

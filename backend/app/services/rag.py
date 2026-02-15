@@ -7,7 +7,6 @@ from langchain_openai import OpenAIEmbeddings
 basedir = pathlib.Path(__file__).parents[2]
 load_dotenv(basedir / ".env")
 
-# 1. Connexion à Supabase
 url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
 api_key = os.getenv("OPENAI_API_KEY")
@@ -16,7 +15,6 @@ if not url or not key:
     raise ValueError("⚠️ Supabase URL ou KEY manquante dans le .env")
 
 supabase: Client = create_client(url, key)
-# 2. Initialisation de l'outil qui transforme le texte en vecteurs (Embeddings)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small", api_key=api_key)
 
 def add_knowledge_to_db(text: str, client_id: str, source: str = "manuel"):
@@ -29,7 +27,7 @@ def add_knowledge_to_db(text: str, client_id: str, source: str = "manuel"):
         "content": text,
         "metadata": {"source": source},
         "embedding": vector,
-        "client_id": client_id  # <--- AJOUT CRITIQUE
+        "client_id": client_id 
     }
     
     response = supabase.table("documents").insert(data).execute()
@@ -43,8 +41,8 @@ def search_knowledge_base(query: str, client_id: str):
     
     params = {
         "query_embedding": query_vector,
-        "match_threshold": 0.22, # <--- LE CHIFFRE MAGIQUE (Suffisamment bas pour tout capter)
-        "match_count": 5,        # On garde 5 morceaux pour avoir du contexte
+        "match_threshold": 0.22, 
+        "match_count": 5,    
         "filter_client_id": client_id 
     }
     
@@ -58,7 +56,6 @@ def save_conversation(user_question: str, bot_response: str, client_id: str = No
             {"role": "bot", "content": bot_response}
         ]
     }
-    # Si tu as ajouté la colonne client_id dans 'conversations' (recommandé)
     if client_id:
         data["client_id"] = client_id
         

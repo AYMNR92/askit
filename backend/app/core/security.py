@@ -17,17 +17,15 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Gestion Graceful de Redis
 redis_client = None
 if REDIS_URL:
     try:
         redis_client = redis.from_url(REDIS_URL, decode_responses=True)
     except Exception:
-        pass # On continue sans cache si Redis n'est pas là
+        pass 
 
 executor = ThreadPoolExecutor(max_workers=5)
 
-# --- FONCTIONS UTILITAIRES ---
 
 def is_origin_allowed(origin: str, allowed_list: list) -> bool:
     try:
@@ -76,8 +74,6 @@ async def get_client_data_cached(token: str) -> dict:
         
     return client_data
 
-# --- LE MIDDLEWARE PRINCIPAL ---
-
 async def verify_security(
     request: Request,
     x_widget_token: str = Header(None, alias="X-Widget-Token")
@@ -90,19 +86,13 @@ async def verify_security(
     if not client_data:
         raise HTTPException(403, "Token invalide ou client inactif")
     
-    # 2. DOMAINE (ORIGIN) - RÉACTIVÉ
     origin = request.headers.get("origin") or request.headers.get("referer")
-    # On autorise localhost pour tes tests
     is_local = origin and ("localhost" in origin or "127.0.0.1" in origin)
     
     if origin and not is_local:
-        # On vérifie vraiment si le domaine est dans la liste
         if not is_origin_allowed(origin, client_data['allowed_origins']):
-             # Tu peux décommenter la ligne suivante pour loguer les tentatives
-             # await log_security_violation(client_data['id'], origin, "Domain mismatch")
              raise HTTPException(403, f"Domaine non autorisé: {origin}")
             
-    # 3. RATE LIMITING
     if redis_client:
         client_ip = request.client.host
         rate_key = f"rate:{x_widget_token}:{client_ip}"
@@ -113,7 +103,6 @@ async def verify_security(
         except redis.RedisError:
             pass
             
-    # 4. QUOTA
     if client_data['requests_used'] >= client_data['monthly_quota']:
         raise HTTPException(402, "Quota mensuel dépassé.")
         

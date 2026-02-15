@@ -4,10 +4,9 @@ import logging
 from typing import Optional, Dict, TypedDict
 from asyncio import Semaphore
 
-# Configuration du Logger
+
 logger = logging.getLogger("uvicorn.error")
 
-# --- Structures de données ---
 class OrderStatus(TypedDict):
     """Structure standardisée pour une commande"""
     number: str
@@ -25,7 +24,6 @@ class ShopifyService:
     DEFAULT_API_VERSION = "2025-01"
 
     def __init__(self, shop_url: str, access_token: str, api_version: str = None):
-        # Nettoyage de l'URL
         self.shop_url = shop_url.replace("https://", "").replace("http://", "").strip("/")
         version = api_version or self.DEFAULT_API_VERSION
         self.base_url = f"https://{self.shop_url}/admin/api/{version}"
@@ -35,7 +33,6 @@ class ShopifyService:
             "Content-Type": "application/json"
         }
         
-        # Rate Limiting: Max 2 requêtes simultanées pour être prudent
         self.semaphore = Semaphore(2)
 
     async def _make_request(self, method: str, endpoint: str, params: dict = None) -> dict:
@@ -43,7 +40,6 @@ class ShopifyService:
         async with self.semaphore:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 try:
-                    # On simule le comportement exact de Postman
                     logger.info(f"🌍 SHOPIFY API: {method} {endpoint} | Params: {params}")
                     
                     response = await client.request(
@@ -72,14 +68,10 @@ class ShopifyService:
         Récupère et nettoie les données de la commande.
         Utilise la logique validée : '#1001'
         """
-        # 1. NETTOYAGE (La méthode qui a marché tout à l'heure)
-        # On ne garde que les chiffres "1001"
         clean_id = ''.join(filter(str.isdigit, order_identifier))
         
-        # On rajoute le dièse pour faire "#1001" (Format Shopify)
         search_name = f"#{clean_id}"
 
-        # 2. REQUÊTE
         data = await self._make_request("GET", "/orders.json", params={"name": search_name, "status": "any", "limit": 1})
         
         if not data or "orders" not in data or not data["orders"]:
@@ -89,7 +81,6 @@ class ShopifyService:
         order = data["orders"][0]
         logger.info(f"✅ Commande trouvée : {order['name']} (ID: {order['id']})")
 
-        # 3. LOGIQUE MÉTIER (Emojis & Statuts)
         fulfillment = order.get("fulfillment_status")
         if fulfillment == "fulfilled":
             status, emoji = "Expédiée", "✅"
@@ -100,7 +91,6 @@ class ShopifyService:
         else:
             status, emoji = "En préparation", "⏳"
 
-        # Gestion du lien de suivi
         tracking_url = order.get("order_status_url", "Non disponible")
         if order.get("fulfillments"):
             for f in order["fulfillments"]:
@@ -108,7 +98,6 @@ class ShopifyService:
                     tracking_url = f["tracking_url"]
                     break
 
-        # Extraction des items
         items = [
             {
                 "name": item["name"],
@@ -140,7 +129,6 @@ class ShopifyService:
             items_list = "\n".join([f"• {i['quantity']}x {i['name']}" for i in status['items']])
             return f"📦 **Commande {status['number']}** contient :\n{items_list}"
 
-        # Cas 2 (Défaut): Statut global
         track_link = status['tracking_url']
         if track_link != "Non disponible":
             track_link = f"[Cliquez ici pour suivre]({track_link})"
