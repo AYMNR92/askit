@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'preact/hooks';
 import './index.css';
+import askitLogo from './assets/askit_icon.svg';
 
 const getWidgetConfig = () => {
   const script = document.currentScript || document.querySelector('script[data-token]');
@@ -67,6 +68,16 @@ export function App() {
     }
   };
 
+  useEffect(() => {
+    window.Askit = {
+      open: () => setIsOpen(true),
+      close: () => setIsOpen(false),
+      toggle: () => setIsOpen(prev => !prev)
+    };
+    
+    return () => delete window.Askit;
+  }, []);
+
   return (
     <div className="fixed bottom-4 right-4 z-[99999] font-sans antialiased">
       
@@ -79,12 +90,15 @@ export function App() {
             className="p-4 flex items-center gap-3 text-white shadow-sm"
             style={{ backgroundColor: config.primaryColor }}
           >
-            <div className="p-2 bg-white/20 rounded-full">
-              <Icons.Bot />
+            <div className="p-1.5 bg-white/70 rounded-full shadow-sm">
+                <img 
+                  src={askitLogo} 
+                  alt="Askit AI" 
+                  className="w-6 h-6 object-contain"
+                />
             </div>
             <div>
-              <h3 className="font-semibold text-sm">Assistant Virtuel</h3>
-              <p className="text-[11px] opacity-90">Répond instantanément</p>
+              <h3 className="font-semibold text-sm">Askit</h3>
             </div>
             <button 
                 onClick={() => setIsOpen(false)} 
