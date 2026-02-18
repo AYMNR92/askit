@@ -101,3 +101,11 @@ Remplacer le support client de niveau 1 (FAQ + suivi de colis) par une solution 
 - Les tickets support.
 - Le temps de réponse.
 - Les coûts opérationnels.
+
+---
+
+## 🗺️ Roadmap & Évolutions à venir
+- [ ] **Handover Humain :** Système de bascule automatique vers un agent live si le score de confiance du LLM est trop bas.
+- [ ] **Analytiques Avancées :** Graphiques de satisfaction client et taux de résolution automatique dans le dashboard.
+- [ ] **Multi-plateformes :** Intégration du widget sur WhatsApp Business et Instagram DM.
+- [ ] **Actions Shopify :** Possibilité pour le bot de créer des retours ou d'annuler des commandes (avec validation admin).
